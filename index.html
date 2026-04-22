@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Her-iban — IBAN Sorgulama</title>
 <meta name="description" content="IBAN numarasının geçerliliğini anında kontrol edin ve hangi bankaya ait olduğunu öğrenin.">
-<link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23080808'/><path d='M22 18v28M42 18v28M22 32h20' stroke='%23F2F2F0' stroke-width='6' stroke-linecap='square' fill='none'/></svg>">
 <link rel="apple-touch-icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,8 +23,8 @@ a{color:inherit;text-decoration:none}
 
 nav{padding:24px 48px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
 .brand-wrap{display:flex;align-items:center;gap:10px;line-height:0}
-.brand-logo{height:32px;width:auto;display:block}
-.brand-fallback{font-family:"Bebas Neue",sans-serif;font-size:1.4rem;letter-spacing:0.08em;color:var(--white);line-height:1}
+.brand-logo{height:56px;width:auto;display:block}
+.brand-fallback{font-family:"Bebas Neue",sans-serif;font-size:2rem;letter-spacing:0.08em;color:var(--white);line-height:1}
 .back{font-family:"Syne",sans-serif;font-size:0.75rem;font-weight:700;color:var(--grey4);letter-spacing:0.1em;text-transform:uppercase}
 
 main{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 24px}
@@ -67,7 +67,9 @@ button:active{transform:translateY(1px)}
   display:flex;align-items:center;justify-content:center;overflow:hidden;
   font-family:"Bebas Neue",sans-serif;font-size:3.5rem;color:var(--black);letter-spacing:0.02em;
 }
-.logo img{width:100%;height:100%;object-fit:contain;padding:14px}
+.logo img{
+  width:100%;height:100%;object-fit:contain;padding:18px;
+}
 .bank-meta{display:flex;flex-direction:column;gap:6px;align-items:center;min-width:0;width:100%}
 .bank-name{font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:1.8rem;color:var(--white);line-height:1.1;letter-spacing:0.02em}
 .bank-tag{font-family:"Syne",sans-serif;font-size:0.7rem;font-weight:700;color:var(--grey4);letter-spacing:0.16em;text-transform:uppercase}
@@ -76,6 +78,18 @@ button:active{transform:translateY(1px)}
 .k{font-family:"Syne",sans-serif;font-size:0.72rem;font-weight:600;color:var(--grey4);letter-spacing:0.12em;text-transform:uppercase;align-self:center}
 .v{font-family:"Instrument Sans",sans-serif;font-size:1rem;color:var(--white);word-break:break-all}
 .v.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0.04em}
+.iban-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.iban-text{flex:1;min-width:0}
+.copy-btn{
+  background:transparent;border:1px solid var(--border);color:var(--grey5);
+  padding:7px 12px;font-family:"Syne",sans-serif;font-size:0.68rem;font-weight:700;
+  letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;border-radius:2px;
+  display:inline-flex;align-items:center;gap:7px;transition:border-color 0.2s,color 0.2s;line-height:1;
+  flex-shrink:0;
+}
+.copy-btn:hover{border-color:var(--grey4);color:var(--white)}
+.copy-btn.copied{border-color:var(--ok);color:var(--ok)}
+.copy-btn svg{width:12px;height:12px;flex-shrink:0}
 
 .note{margin-top:20px;color:var(--grey4);font-size:0.82rem;line-height:1.55}
 .note b{color:var(--grey5);font-weight:600}
@@ -178,15 +192,14 @@ const TR_BANKS = {
   "00146": {name:"Golden Global Yatırım Bankası",     domain:"goldenglobalbank.com",  type:"yatirim"},
   "00147": {name:"ING",                               domain:"ing.com.tr",            type:"yabanci"},
   "00148": {name:"Vakıf Katılım",                     domain:"vakifkatilim.com.tr",   type:"katilim"},
+  "00157": {name:"Enpara.com",                        domain:"enpara.com",            type:"dijital"},
   "00203": {name:"Albaraka Türk",                     domain:"albaraka.com.tr",       type:"katilim"},
   "00205": {name:"Kuveyt Türk",                       domain:"kuveytturk.com.tr",     type:"katilim"},
   "00206": {name:"Türkiye Finans Katılım",            domain:"turkiyefinans.com.tr",  type:"katilim"},
   "00209": {name:"Ziraat Katılım",                    domain:"ziraatkatilim.com.tr",  type:"katilim"},
   "00210": {name:"Emlak Katılım",                     domain:"emlakkatilim.com.tr",   type:"katilim"},
   "00211": {name:"Hayat Finans Katılım",              domain:"hayatfinans.com.tr",    type:"katilim"},
-  "00212": {name:"TOM Bank",                          domain:"tombank.com.tr",        type:"dijital"},
-  "00213": {name:"Colendi Bank",                      domain:"colendi.com",           type:"dijital"},
-  "00214": {name:"Enpara.com",                        domain:"enpara.com",            type:"dijital"}
+  "00829": {name:"Papara",                            domain:"papara.com",            type:"dijital"}
 };
 
 const TYPE_LABELS = {
@@ -256,10 +269,10 @@ function logoHtml(bank, bankCode){
     const initials = bank ? bank.name.split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase() : (bankCode||"?").slice(-2);
     return `<div class="logo">${esc(initials)}</div>`;
   }
-  const primary  = `https://logo.clearbit.com/${bank.domain}`;
-  const fallback = `https://www.google.com/s2/favicons?domain=${bank.domain}&sz=128`;
-  return `<div class="logo"><img src="${primary}" alt="${esc(bank.name)} logo"
-     onerror="if(this.src!=='${fallback}'){this.onerror=null;this.src='${fallback}';}else{this.remove();}"></div>`;
+  const primary  = `https://logo.clearbit.com/${bank.domain}?size=400&format=png`;
+  const fallback = `https://www.google.com/s2/favicons?domain=${bank.domain}&sz=256`;
+  return `<div class="logo"><img src="${primary}" alt="${esc(bank.name)} logo" width="400" height="400"
+     onerror="if(this.src.indexOf('google.com')===-1){this.onerror=null;this.src='${fallback}';}else{this.remove();}"></div>`;
 }
 
 const form = document.getElementById("iban-form");
@@ -291,7 +304,20 @@ function render(res, raw){
           </div>
         </div>`);
     }
-    parts.push(`<div class="row"><div class="k">IBAN</div><div class="v mono">${esc(pretty(res.iban))}</div></div>`);
+    parts.push(`
+      <div class="row">
+        <div class="k">IBAN</div>
+        <div class="v mono iban-row">
+          <span class="iban-text">${esc(pretty(res.iban))}</span>
+          <button class="copy-btn" type="button" data-copy="${esc(res.iban)}" aria-label="IBAN'ı kopyala">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+              <rect x="4.5" y="4.5" width="8" height="9" rx="1"/>
+              <path d="M3.5 11V2.5h8"/>
+            </svg>
+            <span class="copy-label">Kopyala</span>
+          </button>
+        </div>
+      </div>`);
     const cl = COUNTRY_NAMES[res.country] ? `${COUNTRY_NAMES[res.country]} (${res.country})` : res.country;
     parts.push(`<div class="row"><div class="k">Ülke</div><div class="v">${esc(cl)}</div></div>`);
     if (res.bankCode){
@@ -304,6 +330,30 @@ function render(res, raw){
 form.addEventListener("submit",(e)=>{
   e.preventDefault();
   render(parseIban(input.value), input.value);
+});
+
+result.addEventListener("click", async (e) => {
+  const btn = e.target.closest(".copy-btn");
+  if (!btn) return;
+  const iban = btn.dataset.copy || "";
+  try {
+    await navigator.clipboard.writeText(iban);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = iban; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch {}
+    ta.remove();
+  }
+  const label = btn.querySelector(".copy-label");
+  const orig = label ? label.textContent : "";
+  btn.classList.add("copied");
+  if (label) label.textContent = "Kopyalandı";
+  clearTimeout(btn._t);
+  btn._t = setTimeout(() => {
+    btn.classList.remove("copied");
+    if (label) label.textContent = orig;
+  }, 1600);
 });
 
 input.addEventListener("input",()=>{
